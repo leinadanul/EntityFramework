@@ -26,8 +26,6 @@ app.MapGet("/api/task", async ([FromServices] TaskContext dbContext) =>
 
     //return Results.Ok(dbContext.Tasks.Include(p=> p.Category).Where(p=> p.TaskPrority == projectef.Model.Priority.Low));
 });
-
-
 app.MapPost("/api/task", async ([FromServices] TaskContext dbContext, [FromBody] projectef.Model.Task task) => 
 {
     task.TaskId = Guid.NewGuid();
@@ -40,6 +38,40 @@ app.MapPost("/api/task", async ([FromServices] TaskContext dbContext, [FromBody]
 
 
     return Results.Ok();
+});
+
+
+app.MapPut("/api/task/{id}", async ([FromServices] TaskContext dbContext, [FromBody] projectef.Model.Task task, [FromRoute] Guid id) => 
+{
+    var actalTask = dbContext.Tasks.Find(id);
+
+    if(actalTask!= null)
+    {
+        actalTask.CategoryId = task.CategoryId;
+        actalTask.Title = task.Title;
+        actalTask.TaskPrority = task.TaskPrority;
+        actalTask.Description = task.Description;
+        
+        await dbContext.SaveChangesAsync();
+        return Results.Ok();
+    }
+
+    return Results.NotFound();
+});
+
+app.MapDelete("/api/task/{id}", async([FromServices] TaskContext dbContext, [FromRoute] Guid id) =>
+
+{
+    var actalTask = dbContext.Tasks.Find(id);
+
+    if(actalTask!= null)
+    {
+        dbContext.Remove(actalTask);
+        await dbContext.SaveChangesAsync();
+
+        return Results.Ok();
+    }
+    return Results.NotFound();
 });
 
 app.Run();
